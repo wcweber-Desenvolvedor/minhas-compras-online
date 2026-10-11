@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#173b57">
+<title>Minhas Compras Online</title>
+<style>
+:root{--navy:#173b57;--blue:#28658a;--bg:#f3f6f8;--card:#fff;--text:#20313d;--muted:#627582;--line:#dce5ea;--green:#217653;--amber:#946200;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#173b57,#28658a);color:#fff;padding:24px max(18px,calc((100% - 1240px)/2))}
+header h1{margin:0 0 4px;font-size:clamp(1.45rem,3vw,2rem)}header p{margin:0;color:#e2edf4}
+main{max-width:1240px;margin:22px auto;padding:0 16px 40px}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.metric,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #19354a0a}
+.metric .label{color:var(--muted);font-size:.86rem}.metric strong{display:block;font-size:1.4rem;margin-top:5px}
+h2{font-size:1.12rem;margin:0 0 14px}.panel{margin-bottom:18px}.formgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.field{display:flex;flex-direction:column;gap:5px}.wide{grid-column:1/-1}label{font-size:.87rem;font-weight:650;color:#344c5a}
+input,select,textarea{font:inherit;color:var(--text);background:#fff;border:1px solid #cbd8df;border-radius:8px;padding:10px 11px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #7eb8da;outline-offset:1px}textarea{min-height:80px;resize:vertical}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}button,.filelabel{border:0;border-radius:9px;padding:10px 14px;font:inherit;font-weight:650;cursor:pointer;background:var(--navy);color:#fff}button:hover,.filelabel:hover{filter:brightness(1.08)}button.secondary{background:#e7eef2;color:#243f50}button.danger{background:#fff0ef;color:#a21b13;border:1px solid #f2c4c0}button.small{padding:6px 9px;font-size:.82rem}
+.toolbar{display:grid;grid-template-columns:2fr 1fr 1fr auto auto;gap:9px;margin-bottom:12px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:1000px;background:#fff}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#edf3f6;color:#344c5a;font-size:.83rem;white-space:nowrap}tbody tr:last-child td{border-bottom:0}td{font-size:.9rem}.muted{color:var(--muted);font-size:.82rem}.status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.78rem;font-weight:700;background:#edf1f4;color:#425563}.status.ok{background:#e4f4eb;color:#17643f}.status.warn{background:#fff2d5;color:#805800}.status.bad{background:#fee9e7;color:#a21b13}
+.alerts{display:grid;gap:8px}.alert{padding:10px 12px;border-radius:9px;background:#fff2d5;border:1px solid #f0d48e;color:#664b00}.alert.bad{background:#fee9e7;border-color:#f2c4c0;color:#912018}.alert.good{background:#e4f4eb;border-color:#b9e2ca;color:#17643f}
+.empty{text-align:center;padding:26px;color:var(--muted)}.note{font-size:.83rem;color:var(--muted);margin-top:10px}.hidden{display:none!important}.filelabel{display:inline-flex;align-items:center;background:#e7eef2;color:#243f50}
+footer{max-width:1240px;margin:0 auto;padding:0 16px 28px;color:var(--muted);font-size:.82rem}
+@media(max-width:800px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}}
+@media(max-width:520px){header{padding:20px 16px}main{margin-top:14px;padding:0 10px 28px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.summary{gap:8px}.metric{padding:12px}.metric strong{font-size:1.15rem}.panel{padding:13px}.toolbar{grid-template-columns:1fr 1fr}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛒 Minhas Compras Online</h1>
+  <p>Organize seus pedidos, acompanhe entregas e proteja seus prazos de devolução.</p>
+</header>
+<main>
+  <section class="summary" aria-label="Resumo das compras">
+    <div class="metric"><span class="label">Compras registradas</span><strong id="mCount">0</strong></div>
+    <div class="metric"><span class="label">Valor total (produto + frete)</span><strong id="mTotal">R$ 0,00</strong></div>
+    <div class="metric"><span class="label">Aguardando entrega</span><strong id="mPending">0</strong></div>
+    <div class="metric"><span class="label">Alertas ativos</span><strong id="mAlerts">0</strong></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="formTitle">Cadastrar compra</h2>
+    <form id="purchaseForm">
+      <input type="hidden" id="editId">
+      <div class="formgrid">
+        <div class="field"><label for="store">Loja / fornecedor / produtor *</label><input id="store" required maxlength="160" placeholder="Nome da loja ou fornecedor"></div>
+        <div class="field"><label for="order">Número do pedido</label><input id="order" maxlength="100" placeholder="Número do pedido"></div>
+        <div class="field"><label for="product">Item / produto *</label><input id="product" required maxlength="200" placeholder="Descrição do produto"></div>
+        <div class="field"><label for="purchaseDate">Data da compra</label><input id="purchaseDate" type="date"></div>
+        <div class="field"><label for="price">Valor do produto (R$)</label><input id="price" type="number" min="0" step="0.01" placeholder="0,00"></div>
+        <div class="field"><label for="shipping">Valor do frete (R$)</label><input id="shipping" type="number" min="0" step="0.01" placeholder="0,00"></div>
+        <div class="field"><label for="tax">Valor do imposto (R$) — mercado externo</label><input id="tax" type="number" min="0" step="0.01" placeholder="0,00"></div>
+        <div class="field"><label for="invoice">Número da nota fiscal</label><input id="invoice" maxlength="100" placeholder="Número da NF"></div>
+        <div class="field"><label for="deliveryDue">Data prevista da entrega</label><input id="deliveryDue" type="date"></div>
+        <div class="field"><label for="deliveryDate">Data efetiva da entrega</label><input id="deliveryDate" type="date"></div>
+        <div class="field"><label for="returnDue">Prazo limite para devolução</label><input id="returnDue" type="date"></div>
+        <div class="field"><label for="status">Status da compra</label><select id="status">
+          <option>Aguardando entrega</option><option>Entregue</option><option>Entrega atrasada</option><option>Devolução solicitada</option><option>Devolvido</option><option>Cancelado</option>
+        </select></div>
+        <div class="field wide"><label for="notes">Observações</label><textarea id="notes" maxlength="3000" placeholder="Rastreamento, garantia, condições do produto e outras anotações..."></textarea></div>
+      </div>
+      <div class="actions">
+        <button type="submit" id="saveBtn">Salvar compra</button>
+        <button type="button" class="secondary hidden" id="cancelEdit">Cancelar edição</button>
+        <button type="reset" class="secondary" id="clearBtn">Limpar campos</button>
+      </div>
+      <p class="note">Os dados são salvos neste navegador. Faça backups periódicos para evitar perda de registros.</p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>🔔 Avisos e prazos</h2>
+    <div id="alerts" class="alerts"><div class="empty">Nenhum alerta no momento.</div></div>
+    <p class="note">Avisos de devolução aparecem com 7, 3 e 1 dia de antecedência. Atrasos são identificados quando a data prevista passa e o pedido continua sem entrega registrada.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Compras registradas</h2>
+    <div class="toolbar">
+      <input id="search" placeholder="Pesquisar loja, produto ou pedido" aria-label="Pesquisar compras">
+      <select id="filterStatus" aria-label="Filtrar por status"><option value="">Todos os status</option><option>Aguardando entrega</option><option>Entregue</option><option>Entrega atrasada</option><option>Devolução solicitada</option><option>Devolvido</option><option>Cancelado</option></select>
+      <select id="filterReturn" aria-label="Filtrar por prazo"><option value="">Todos os prazos</option><option value="upcoming">Devolução próxima</option><option value="overdue">Prazo vencido</option><option value="late">Entrega atrasada</option></select>
+      <button type="button" class="secondary" id="backupBtn">⬇ Backup</button>
+      <button type="button" class="secondary" id="restoreBtn">⬆ Restaurar</button>
+      <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Loja / fornecedor</th><th>Pedido / produto</th><th>Compra</th><th>Valor total</th><th>Entrega prevista / efetiva</th><th>Devolução até</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="emptyRows" class="empty">Nenhuma compra cadastrada. Use o formulário acima para adicionar a primeira.</div>
+  </section>
+</main>
+<footer>Versão inicial para testes • Armazenamento local neste navegador • Os alertas aparecem ao abrir o aplicativo; notificações externas ainda não estão ativadas.</footer>
+<script>
+(function(){
+'use strict';
+const KEY='minhasComprasOnline_v1';
+let purchases=[];
+const $=id=>document.getElementById(id);
+const fields=['store','order','product','purchaseDate','price','shipping','tax','invoice','deliveryDue','deliveryDate','returnDue','status','notes'];
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const parseDate=s=>s?new Date(s+'T12:00:00'):null;
+const today=()=>{const d=new Date();d.setHours(12,0,0,0);return d};
+const daysBetween=(a,b)=>Math.round((a-b)/86400000);
+const dateBR=s=>s?parseDate(s).toLocaleDateString('pt-BR'):'—';
+const total=p=>(Number(p.price)||0)+(Number(p.shipping)||0)+(Number(p.tax)||0);
+const closed=p=>['Devolvido','Cancelado'].includes(p.status);
+const delivered=p=>Boolean(p.deliveryDate)||['Entregue','Devolução solicitada','Devolvido'].includes(p.status);
+function save(){try{localStorage.setItem(KEY,JSON.stringify(purchases));}catch(e){alert('Não foi possível salvar os dados neste navegador. Faça um backup e verifique o espaço disponível.');}}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);if(Array.isArray(d))purchases=d;}}catch(e){purchases=[];}}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function returnDays(p){if(!p.returnDue||closed(p)||p.status==='Devolução solicitada')return null;return daysBetween(parseDate(p.returnDue),today());}
+function isLate(p){return Boolean(p.deliveryDue)&&!delivered(p)&&!closed(p)&&parseDate(p.deliveryDue)<today();}
+function statusLabel(p){if(isLate(p))return 'Entrega atrasada';return p.status||'Aguardando entrega';}
+function statusClass(p){const s=statusLabel(p);if(s==='Entregue'||s==='Devolvido')return 'ok';if(s==='Entrega atrasada'||(returnDays(p)!==null&&returnDays(p)<0))return 'bad';if(s==='Aguardando entrega'||s==='Devolução solicitada'||(returnDays(p)!==null&&returnDays(p)<=7))return 'warn';return '';}
+function alertItems(){
+ const out=[];
+ for(const p of purchases){
+  if(closed(p))continue;
+  if(isLate(p)){const d=Math.abs(daysBetween(parseDate(p.deliveryDue),today()));out.push({type:'bad',text:`Entrega atrasada: “${p.product}” — ${esc(p.store)}. Prevista para ${dateBR(p.deliveryDue)}${d?` (há ${d} dia(s))`:''}.`});}
+  const n=returnDays(p);
+  if(n!==null){
+   if([7,3,1].includes(n))out.push({type:n===1?'bad':'',text:`Prazo de devolução de “${p.product}” em ${n} dia(s) (${dateBR(p.returnDue)}). Loja: ${esc(p.store)}.`});
+   else if(n===0)out.push({type:'bad',text:`Último dia para solicitar devolução de “${p.product}” (${dateBR(p.returnDue)}). Loja: ${esc(p.store)}.`});
+   else if(n<0)out.push({type:'bad',text:`Prazo de devolução vencido para “${p.product}” em ${dateBR(p.returnDue)}. Verifique se há solicitação em andamento.`});
+  }
+ }
+ return out;
+}
+function render(){
+ const active=purchases.filter(p=>!closed(p));
+ $('mCount').textContent=purchases.length;
+ $('mTotal').textContent=money(purchases.reduce((s,p)=>s+total(p),0));
+ $('mPending').textContent=purchases.filter(p=>!delivered(p)&&!closed(p)).length;
+ const alerts=alertItems();$('mAlerts').textContent=alerts.length;
+ $('alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.type}">${a.text}</div>`).join(''):'<div class="alert good">Nenhum alerta ativo. Seus prazos estão em dia conforme os registros cadastrados.</div>';
+ const q=$('search').value.trim().toLocaleLowerCase('pt-BR'),fs=$('filterStatus').value,fr=$('filterReturn').value;
+ const list=purchases.filter(p=>{
+  const hay=[p.store,p.order,p.product,p.invoice,p.notes].join(' ').toLocaleLowerCase('pt-BR');
+  if(q&&!hay.includes(q))return false;
+  if(fs&&statusLabel(p)!==fs&&p.status!==fs)return false;
+  if(fr==='upcoming'&&!(returnDays(p)!==null&&returnDays(p)>=0&&returnDays(p)<=7))return false;
+  if(fr==='overdue'&&!(returnDays(p)!==null&&returnDays(p)<0))return false;
+  if(fr==='late'&&!isLate(p))return false;
+  return true;
+ }).sort((a,b)=>(b.purchaseDate||'').localeCompare(a.purchaseDate||''));
+ $('rows').innerHTML=list.map(p=>`<tr>
+ <td><strong>${esc(p.store)}</strong>${p.invoice?`<div class="muted">NF: ${esc(p.invoice)}</div>`:''}</td>
+ <td>${esc(p.order||'—')}<div>${esc(p.product)}</div>${p.notes?`<div class="muted">${esc(p.notes)}</div>`:''}</td>
+ <td>${dateBR(p.purchaseDate)}</td><td><strong>${money(total(p))}</strong><div class="muted">Produto ${money(p.price)} + frete ${money(p.shipping)} + imposto ${money(p.tax)}</div></td>
+ <td>${dateBR(p.deliveryDue)}<div class="muted">Efetiva: ${dateBR(p.deliveryDate)}</div></td>
+ <td>${dateBR(p.returnDue)}${returnDays(p)!==null?`<div class="muted">${returnDays(p)<0?'Prazo vencido':returnDays(p)===0?'Último dia':`Faltam ${returnDays(p)} dia(s)`}</div>`:''}</td>
+ <td><span class="status ${statusClass(p)}">${esc(statusLabel(p))}</span></td>
+ <td><div class="actions" style="margin:0"><button class="small" data-edit="${esc(p.id)}">Editar</button><button class="small secondary" data-deliver="${esc(p.id)}">Registrar entrega</button><button class="small danger" data-delete="${esc(p.id)}">Excluir</button></div></td></tr>`).join('');
+ $('emptyRows').classList.toggle('hidden',list.length>0);
+}
+function resetForm(){ $('purchaseForm').reset();$('editId').value='';$('formTitle').textContent='Cadastrar compra';$('saveBtn').textContent='Salvar compra';$('cancelEdit').classList.add('hidden');}
+$('purchaseForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const oldId=$('editId').value;
+ const p={id:oldId||id()};
+ fields.forEach(k=>p[k]=$(k).value.trim());
+ p.price=Number(p.price)||0;p.shipping=Number(p.shipping)||0;
+ if(p.deliveryDate&&p.status==='Aguardando entrega')p.status='Entregue';
+ if(p.status==='Entregue'&&!p.deliveryDate)p.deliveryDate=new Date().toISOString().slice(0,10);
+ if(oldId){const i=purchases.findIndex(x=>x.id===oldId);if(i>=0)purchases[i]=p;}else purchases.push(p);
+ save();resetForm();render();window.scrollTo({top:0,behavior:'smooth'});
+});
+$('cancelEdit').addEventListener('click',resetForm);
+$('clearBtn').addEventListener('click',()=>setTimeout(resetForm,0));
+$('rows').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ const p=purchases.find(x=>x.id===b.dataset.edit||x.id===b.dataset.delete||x.id===b.dataset.deliver);if(!p)return;
+ if(b.dataset.edit){
+  fields.forEach(k=>$(k).value=p[k]??'');$('editId').value=p.id;$('formTitle').textContent='Editar compra';$('saveBtn').textContent='Salvar alterações';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
+ }else if(b.dataset.deliver){
+  const d=prompt('Informe a data efetiva da entrega (AAAA-MM-DD):',new Date().toISOString().slice(0,10));if(d===null)return;
+  if(d&&!/^\d{4}-\d{2}-\d{2}$/.test(d)){alert('Data inválida. Use o formato AAAA-MM-DD.');return;}
+  p.deliveryDate=d;p.status='Entregue';save();render();
+ }else if(b.dataset.delete&&confirm(`Excluir a compra “${p.product}” de ${p.store}? Esta ação não pode ser desfeita sem backup.`)){
+  purchases=purchases.filter(x=>x.id!==p.id);save();render();
+ }
+});
+$('search').addEventListener('input',render);$('filterStatus').addEventListener('change',render);$('filterReturn').addEventListener('change',render);
+$('backupBtn').addEventListener('click',()=>{
+ const blob=new Blob([JSON.stringify({app:'Minhas Compras Online',version:1,exportedAt:new Date().toISOString(),purchases},null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Minhas_Compras_Online_Backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
+});
+$('restoreBtn').addEventListener('click',()=>$('restoreFile').click());
+$('restoreFile').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const data=JSON.parse(await f.text()),items=Array.isArray(data)?data:data.purchases;
+  if(!Array.isArray(items)||!items.every(p=>p&&typeof p==='object'&&typeof p.product==='string'&&typeof p.store==='string'))throw new Error('Formato');
+  if(!confirm(`O arquivo contém ${items.length} compra(s). Restaurar substituirá os registros atuais deste navegador. Faça backup antes, se necessário. Continuar?`))return;
+  purchases=items.map(p=>({...p,id:p.id||id(),status:p.status||'Aguardando entrega',price:Number(p.price)||0,shipping:Number(p.shipping)||0,tax:Number(p.tax)||0}));save();render();alert('Backup restaurado com sucesso.');
+ }catch(err){alert('Não foi possível restaurar este arquivo. Selecione um backup JSON válido do Minhas Compras Online.');}
+ finally{e.target.value='';}
+});
+load();render();
+})();
+</script>
+</body>
+</html>
